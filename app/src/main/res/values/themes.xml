@@ -2,7 +2,16 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.TomorrowHouse" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/white</item>
+        <item name="colorOnPrimary">@color/black</item>
+
+        <item name="colorSecondary">#00F6FF</item>
+        <item name="colorSecondaryVariant">#009398</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.TomorrowHouse" parent="Base.Theme.TomorrowHouse" />
