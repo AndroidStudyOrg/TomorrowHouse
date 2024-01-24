@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -29,8 +31,14 @@ class BookmarkArticleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        bookmarkAdapter = BookmarkArticleAdapter {
+        binding.toolbar.setupWithNavController(findNavController())
 
+        bookmarkAdapter = BookmarkArticleAdapter {
+            findNavController().navigate(
+                BookmarkArticleFragmentDirections.actionBookmarkArticleFragmentToArticleFragment(
+                    it.articleId.orEmpty()
+                )
+            )
         }
 
         binding.articleRecyclerView.apply {

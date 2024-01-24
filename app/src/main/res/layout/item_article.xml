@@ -17,6 +17,15 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:background="@color/gray_cc" />
 
+    <ImageView
+        android:id="@+id/bookmarkImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/thumnailImageView"
+        app:layout_constraintEnd_toEndOf="@id/thumnailImageView"
+        android:layout_margin="5dp"
+        android:background="@drawable/baseline_bookmark_border_24"/>
+
     <TextView
         android:id="@+id/descriptionTextView"
         android:layout_width="0dp"

@@ -1,6 +1,7 @@
 package org.shop.tomorrowhouse.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import org.shop.tomorrowhouse.data.ArticleModel
@@ -34,15 +37,7 @@ class HomeFragment : Fragment() {
         setupWriteButton()
         setupBookmarkButton()
         setupRecyclerView()
-
-        Firebase.firestore.collection("articles").get().addOnSuccessListener { result ->
-            val list = result.map {
-                it.toObject<ArticleModel>()
-            }
-            articleAdapter.submitList(list)
-        }.addOnFailureListener {
-
-        }
+        fetchFirestoreData()
     }
 
     private fun setupWriteButton() {
@@ -63,17 +58,63 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        articleAdapter = HomeArticleAdapter {
-            findNavController().navigate(
-                HomeFragmentDirections.actionHomeFragmentToArticleFragment(
-                    articleId = it.articleId.orEmpty()
+        articleAdapter = HomeArticleAdapter(
+            onItemClicked = {
+                findNavController().navigate(
+                    HomeFragmentDirections.actionHomeFragmentToArticleFragment(
+                        articleId = it.articleId.orEmpty()
+                    )
                 )
-            )
-        }
+            }, onBookmarkClicked = { articleId, isBookmark ->
+                val uid = Firebase.auth.currentUser?.uid ?: return@HomeArticleAdapter
+                Firebase.firestore.collection("bookmark").document(uid).update(
+                    "articleIds", if (isBookmark) {
+                        FieldValue.arrayUnion(articleId)
+                    } else {
+                        FieldValue.arrayRemove(articleId)
+                    }
+                ).addOnFailureListener {
+                    if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.NOT_FOUND) {
+                        if (isBookmark) {
+                            Firebase.firestore.collection("bookmark").document(uid).set(
+                                hashMapOf(
+                                    "articleIds" to listOf(articleId)
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        )
 
         binding.homeRecyclerView.apply {
             layoutManager = GridLayoutManager(context, 2)
             adapter = articleAdapter
+        }
+    }
+
+    private fun fetchFirestoreData() {
+        val uid = Firebase.auth.currentUser?.uid ?: return
+        Firebase.firestore.collection("bookmark").document(uid).get().addOnSuccessListener {
+            Log.e("HomeFragment", "it: $it")
+            val bookmarList = it.get("articleIds") as? List<*>
+            Log.e("HomeFragment fetchFirestoreData", "BookmarkList: $bookmarList")
+
+            Firebase.firestore.collection("articles").get().addOnSuccessListener { result ->
+                val list =
+                    result.map { snapshot -> snapshot.toObject<ArticleModel>() }.map { model ->
+                        Log.e("HomeFragment ArticleItemMapping", "Model: $model")
+                        ArticleItem(
+                            articleId = model.articleId.orEmpty(),
+                            description = model.description.orEmpty(),
+                            imageUrl = model.imageUrl.orEmpty(),
+                            isBookmark = bookmarList?.contains(model.articleId.orEmpty()) ?: false
+                        )
+                    }
+                articleAdapter.submitList(list)
+            }.addOnFailureListener {
+
+            }
         }
     }
 }

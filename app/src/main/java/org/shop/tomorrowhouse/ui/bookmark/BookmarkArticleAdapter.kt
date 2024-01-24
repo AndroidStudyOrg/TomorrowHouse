@@ -2,6 +2,7 @@ package org.shop.tomorrowhouse.ui.bookmark
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +18,7 @@ class BookmarkArticleAdapter(private val onItemClicked: (ArticleModel) -> Unit) 
             Glide.with(binding.thumnailImageView).load(article.imageUrl)
                 .into(binding.thumnailImageView)
             binding.descriptionTextView.text = article.description
+            binding.bookmarkImageButton.isVisible = false
 
             binding.root.setOnClickListener {
                 onItemClicked(article)
