@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -17,6 +18,7 @@ import org.shop.tomorrowhouse.databinding.FragmentHomeBinding
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
+    private lateinit var articleAdapter: HomeArticleAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,16 +32,23 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val db = Firebase.firestore
-        db.collection("articles").document("Jk9cTs8U1Ek1ezm0rYI1").get()
-            .addOnSuccessListener { result ->
-                val article = result.toObject<ArticleModel>()
+        articleAdapter = HomeArticleAdapter {
+            findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToArticleFragment(articleId = it.articleId.orEmpty()))
+        }
 
-                Log.e("HomeFragment - result", result.toString())
-                Log.e("HomeFragment - getArticle", article.toString())
-            }.addOnFailureListener {
-                it.printStackTrace()
+        binding.homeRecyclerView.apply {
+            layoutManager = GridLayoutManager(context, 2)
+            adapter = articleAdapter
+        }
+
+        Firebase.firestore.collection("articles").get().addOnSuccessListener { result ->
+            val list = result.map {
+                it.toObject<ArticleModel>()
             }
+            articleAdapter.submitList(list)
+        }.addOnFailureListener {
+
+        }
 
         setUpWriteButton()
     }

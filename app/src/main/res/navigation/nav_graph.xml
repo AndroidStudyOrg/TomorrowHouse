@@ -17,6 +17,9 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_left" />
+        <action
+            android:id="@+id/action_homeFragment_to_articleFragment"
+            app:destination="@id/articleFragment" />
     </fragment>
 
     <fragment
@@ -39,5 +42,14 @@
             app:exitAnim="@anim/slide_out_right"
             app:popEnterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_left" />
+    </fragment>
+    <fragment
+        android:id="@+id/articleFragment"
+        android:name="org.shop.tomorrowhouse.ui.article.ArticleFragment"
+        android:label="글 상세 {articleId}"
+        tools:layout="@layout/fragment_article" >
+        <argument
+            android:name="articleId"
+            app:argType="string" />
     </fragment>
 </navigation>
