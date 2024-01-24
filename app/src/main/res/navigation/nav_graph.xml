@@ -20,6 +20,9 @@
         <action
             android:id="@+id/action_homeFragment_to_articleFragment"
             app:destination="@id/articleFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_bookmarkArticleFragment"
+            app:destination="@id/bookmarkArticleFragment" />
     </fragment>
 
     <fragment
@@ -52,4 +55,9 @@
             android:name="articleId"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/bookmarkArticleFragment"
+        android:name="org.shop.tomorrowhouse.ui.bookmark.BookmarkArticleFragment"
+        android:label="fragment_bookmark_article"
+        tools:layout="@layout/fragment_bookmark_article" />
 </navigation>

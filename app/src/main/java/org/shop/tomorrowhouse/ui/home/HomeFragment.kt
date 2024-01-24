@@ -1,7 +1,6 @@
 package org.shop.tomorrowhouse.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,14 +31,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        articleAdapter = HomeArticleAdapter {
-            findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToArticleFragment(articleId = it.articleId.orEmpty()))
-        }
-
-        binding.homeRecyclerView.apply {
-            layoutManager = GridLayoutManager(context, 2)
-            adapter = articleAdapter
-        }
+        setupWriteButton()
+        setupBookmarkButton()
+        setupRecyclerView()
 
         Firebase.firestore.collection("articles").get().addOnSuccessListener { result ->
             val list = result.map {
@@ -49,11 +43,9 @@ class HomeFragment : Fragment() {
         }.addOnFailureListener {
 
         }
-
-        setUpWriteButton()
     }
 
-    private fun setUpWriteButton() {
+    private fun setupWriteButton() {
         binding.writeButton.setOnClickListener {
             if (Firebase.auth.currentUser != null) {
                 val action = HomeFragmentDirections.actionHomeFragmentToWriteArticleFragment()
@@ -61,6 +53,27 @@ class HomeFragment : Fragment() {
             } else {
                 Snackbar.make(binding.root, "로그인 후 사용해 주세요", Snackbar.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun setupBookmarkButton() {
+        binding.bookmarkImageButton.setOnClickListener {
+            findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToBookmarkArticleFragment())
+        }
+    }
+
+    private fun setupRecyclerView() {
+        articleAdapter = HomeArticleAdapter {
+            findNavController().navigate(
+                HomeFragmentDirections.actionHomeFragmentToArticleFragment(
+                    articleId = it.articleId.orEmpty()
+                )
+            )
+        }
+
+        binding.homeRecyclerView.apply {
+            layoutManager = GridLayoutManager(context, 2)
+            adapter = articleAdapter
         }
     }
 }
