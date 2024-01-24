@@ -10,6 +10,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
@@ -21,18 +23,15 @@ import java.util.UUID
 
 class WriteArticleFragment : Fragment() {
     private lateinit var binding: FragmentWriteArticleBinding
+    private lateinit var viewModel: WriteArticleViewModel
 
-    private var selectedUri: Uri? = null
     private val pickMedia =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             // Callback is invoked after the user selects a media item or closes the
             // photo picker.
             if (uri != null) {
                 Log.d("PhotoPicker", "Selected URI: $uri")
-                selectedUri = uri
-                binding.photoImageView.setImageURI(uri)
-                binding.addButton.isVisible = false
-                binding.deleteButton.isVisible = true
+                viewModel.updateSelectedUri(uri)
             }
         }
 
@@ -48,11 +47,28 @@ class WriteArticleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        startPicker()
+        setupViewModel()
+        if (viewModel.selectedUri.value == null) {
+            startPicker()
+        }
         setUpPhotoImageView()
         setUpDeleteButton()
         setUpSubmitButton()
         setUpBackButton()
+    }
+
+    private fun setupViewModel() {
+        viewModel = ViewModelProvider(requireActivity()).get<WriteArticleViewModel>()
+        viewModel.selectedUri.observe(viewLifecycleOwner) {
+            binding.photoImageView.setImageURI(it)
+            if (it != null) {
+                binding.addButton.isVisible = false
+                binding.deleteButton.isVisible = true
+            } else {
+                binding.addButton.isVisible = true
+                binding.deleteButton.isVisible = false
+            }
+        }
     }
 
     private fun startPicker() {
@@ -62,7 +78,7 @@ class WriteArticleFragment : Fragment() {
     private fun setUpPhotoImageView() {
         binding.photoImageView.setOnClickListener {
             // 처음에도 시작하고, photoImageView를 눌렀을 때에도 시작
-            if (selectedUri == null) {
+            if (viewModel.selectedUri.value == null) {
                 startPicker()
             }
         }
@@ -70,18 +86,15 @@ class WriteArticleFragment : Fragment() {
 
     private fun setUpDeleteButton() {
         binding.deleteButton.setOnClickListener {
-            binding.photoImageView.setImageURI(null)
-            selectedUri = null
-            binding.deleteButton.isVisible = false
-            binding.addButton.isVisible = true
+            viewModel.updateSelectedUri(null)
         }
     }
 
     private fun setUpSubmitButton() {
         binding.submitButton.setOnClickListener {
             showProgress()
-            if (selectedUri != null) {
-                val photoUri = selectedUri ?: return@setOnClickListener
+            if (viewModel.selectedUri.value != null) {
+                val photoUri = viewModel.selectedUri.value ?: return@setOnClickListener
                 uploadImage(uri = photoUri, successHandler = {
                     // FireStore에 데이터 업로드
                     uploadArticle(it, binding.descriptionEditText.text.toString())
